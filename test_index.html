@@ -1,0 +1,106 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
+  </head>
+  <body>
+    <div id="App">
+      <div id="Output"></div>
+      <input
+        type="text"
+        id="Input"
+        placeholder="Enter a message..."
+        autofocus
+      >
+      <!-- <input type="file" id="file_input"> -->
+    <input type='file' onchange="readURL(this);" id="profile" />
+    <img id="blah" src="#" alt="your image" />
+    </div>
+    <script src="http://localhost:8082/gun.js"></script>
+    <link class="jsbin" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+    <script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="https://github.com/amark/gun/blob/master/lib/upload.js"></script>
+    <script> 
+      const gun = Gun('http://localhost:8082' + '/gun');
+
+
+      function readURL(input) {
+        const gun = Gun('http://localhost:8082' + '/gun'); 
+        //var gun = Gun()       
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#blah')
+                    .attr('src', {name:img1.src})
+                    .width(200)
+                    .height(200);
+            };
+
+            $file_input = reader.readAsDataURL(input.files[0]);
+            console.log(input.files[0])
+
+            var img1 = document.createElement("img");
+            img1.src = input.files[0];
+            gun.put({name:img1.src})
+            gun.get({name:img1.src})
+
+            //$files = (input.files[0]).base64
+            //console.log($files)
+            //console.log($files)  
+            //console.log(gun)
+            //var jack  = gun.get('jack');
+            //jack.put({filename:input.files[0]})
+
+          $('#profile').upload(function resize(e, up){
+          if(e.err){ return } // handle error
+          $('#profile').addClass('pulse'); // css to indicate image processing
+          if(up){ return up.shrink(e, resize, 64) } // pass it `e` drag&drop/upload event, then I reuse the current function (named resize) as the callback for it, and tell it resize to 64px.
+          $('#profile').removeClass('pulse'); // css indicate done processing.
+          $("#profile img").attr('src', e.base64).removeClass('none'); // set photo in HTML!
+          gun.user().get('who').get('face').get('small').put(e.base64); // save profile thumbnail to GUN
+          });
+            //gun.put(input.files[0])
+           // gun.get('test-input-file').put({ input.files[0] });
+
+        }
+    }
+
+      $Input.addEventListener('input', e => {
+        const { value } = e.target;
+       
+        gun.get('test-input').put({
+          value
+        });
+      });
+
+      $file.addEventListener('input', e => {
+        const { value } = e.target;
+        gun.get('test-input-file').put({
+          value
+        });
+      });
+
+
+      let timestamp = 0;
+      gun.get('test-input').on(function(data, key) {
+        const ts = data._['>'].value;
+        if (timestamp === ts) {
+          return;
+        }
+        timestamp = ts;
+        console.log("update:", data);
+        const $Output = document.querySelector('#Output');
+        $Output.innerHTML = /* @html */`
+          <pre>
+            </code>
+              ${JSON.stringify(data, null, 2)}
+
+
+            </code>
+          </pre>
+        `;
+      });
+    </script>
+  </body>
+</html>

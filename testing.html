@@ -1,0 +1,116 @@
+
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
+  </head>
+  <body>
+    <div id="App">
+      <div id="Output"></div>
+      <input
+        type="text"
+        id="Input"
+        placeholder="Enter a message..."
+        autofocus
+      >
+      <input type="file" id="myFile" multiple size="50" onchange="myFunction()">
+      <p id="demo"></p>
+    </div>
+    <script src="http://localhost:8082/gun.js"></script>
+    <link class="jsbin" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+    <script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
+    <script>
+      const gun = Gun('http://localhost:8082' + '/gun');
+
+      const $Input = document.querySelector('#Input');
+      gun.get('test-input').val((data) => {
+        $Input.value = data.value;
+      }) 
+      $Input.addEventListener('input', e => {
+        const { value } = e.target;
+        gun.get('test-input').put({
+          value
+        });
+      });
+
+      let timestamp = 0;
+      gun.get('test-input').on(function(data, key) {
+        const ts = data._['>'].value;
+        if (timestamp === ts) {
+          return;
+        }
+        timestamp = ts;
+        console.log("update:", data);
+        var jack  = gun.get('jack');
+        jack.put({name:'jack',occupation:'manager'})
+
+        const $Output = document.querySelector('#Output');
+        $Output.innerHTML = /* @html */`
+          <pre>
+            </code>
+              ${JSON.stringify(data, null, 2)}
+            </code>
+          </pre>
+        `;
+      });
+
+//////////////////////////
+
+function myFunction(){
+  const gun = Gun('http://localhost:8082' + '/gun');
+  var x = document.getElementById("myFile");
+  //var y = document.getElementById("myFile").files[0];
+  //console.log(y);
+  var txt = "";
+  if ('files' in x) {
+    if (x.files.length == 0) {
+      txt = "Select one or more files.";
+    } else {
+      for (var i = 0; i < x.files.length; i++) {
+        txt += "<br><strong>" + (i+1) + ". file</strong><br>";
+        var file = x.files[i];
+        //console.log(x.files[0])
+        gun.get(file)
+        gun.put(file.base64)
+        if ('name' in file) {
+          txt += "name: " + file.name + "<br>";
+        }
+        if ('size' in file) {
+          txt += "size: " + file.size + " bytes <br>";
+        }
+      }
+    }
+  } 
+  else {
+    if (x.value == "") {
+      txt += "Select one or more files.";
+    } else {
+      txt += "The files property is not supported by your browser!";
+      txt  += "<br>The path of the selected file: " + x.value; // If the browser does not support the files property, it will return the path of the selected file instead. 
+    }
+  }
+  document.getElementById("demo").innerHTML = txt;
+}
+
+var img1 = document.createElement("img");
+img1.src = "/home/glab/Downloads/slogan_result.jpg";
+gun.put({name:img1.src})
+$data = gun.get({name:img1.src})
+
+
+       const $Output = document.querySelector('#Output');
+        $Output.innerHTML = /* @html */`
+          <pre>
+            </code>
+              ${JSON.stringify(data, null, 2)}
+            </code>
+          </pre>
+        `;
+ 
+
+//////////////////////////
+
+
+    </script>
+  </body>
+</html>
